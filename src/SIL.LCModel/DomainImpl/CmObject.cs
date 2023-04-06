@@ -195,6 +195,7 @@ namespace SIL.LCModel.DomainImpl
 		public int Hvo
 		{
 			get { return m_hvo; }
+			set { m_hvo = value; }
 		}
 
 		/// <summary>
@@ -341,6 +342,7 @@ namespace SIL.LCModel.DomainImpl
 		public Guid Guid
 		{
 			get { return m_guid == null ? Guid.Empty : m_guid.Guid; }
+			set { m_guid = Services.GetInstance<ICmObjectIdFactory>().FromGuid(value); }
 		}
 
 		/// <summary>

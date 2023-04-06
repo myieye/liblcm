@@ -61,6 +61,7 @@ $propNotes
 					if (m_$prop.NiuginianPropName == null)
 						m_$prop.NiuginianPropName = new ${prop.CSharpType}(this, $prop.Number);
 				}
+				m_${prop.NiuginianPropName}.Flid = $prop.Number;
 				return m_$prop.NiuginianPropName;
 			}
 		}

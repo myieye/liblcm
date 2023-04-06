@@ -144,8 +144,8 @@ namespace SIL.LCModel.Core.WritingSystems
 			{
 				VariantSubtag[] variantSubtagsArray = variantSubtags.ToArray();
 				string langTag = IetfLanguageTag.Create(languageSubtag, scriptSubtag, regionSubtag, variantSubtagsArray);
-				CoreWritingSystemDefinition ws;
-				m_repo.WritingSystemFactory.Create(langTag, out ws);
+				CoreWritingSystemDefinition ws = null;
+				Watch.Time("WritingSystemManager.Create: WritingSystemFactory.Create()", () => m_repo.WritingSystemFactory.Create(langTag, out ws));
 				if (ws.Language != null && languageSubtag != null && ws.Language.Name != languageSubtag.Name)
 					ws.Language = new LanguageSubtag(ws.Language, languageSubtag.Name);
 				if (ws.Script != null && scriptSubtag != null && ws.Script.Name != scriptSubtag.Name)
@@ -164,11 +164,11 @@ namespace SIL.LCModel.Core.WritingSystems
 
 				if (ws.DefaultCollation == null)
 				{
-					string message;
-					if (SystemCollator.ValidateLanguageTag(ws.LanguageTag, out message))
+						string message;
+						if (SystemCollator.ValidateLanguageTag(ws.LanguageTag, out message))
 						ws.DefaultCollation = new SystemCollationDefinition {LanguageTag = ws.LanguageTag};
-					else
-						ws.DefaultCollation = new IcuRulesCollationDefinition("standard");
+						else
+							ws.DefaultCollation = new IcuRulesCollationDefinition("standard");
 				}
 				if (ws.DefaultFont == null)
 					ws.DefaultFont = new FontDefinition("Charis SIL");

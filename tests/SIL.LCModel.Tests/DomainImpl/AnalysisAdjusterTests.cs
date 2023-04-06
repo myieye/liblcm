@@ -4063,7 +4063,7 @@ namespace SIL.LCModel.DomainImpl
 		#region not implemented
 		public ICmObjectId Id { get { throw new NotImplementedException(); } }
 		public ICmObject GetObject(ICmObjectRepository repo) { throw new NotImplementedException(); }
-		public int Hvo { get { throw new NotImplementedException(); } }
+		public int Hvo { get { throw new NotImplementedException(); } set { throw new NotImplementedException(); } }
 		public ICmObject Owner { get { throw new NotImplementedException(); } }
 		public int OwningFlid { get { throw new NotImplementedException(); } }
 		public int OwnOrd { get { throw new NotImplementedException(); } }

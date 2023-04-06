@@ -54,7 +54,7 @@ namespace SIL.LCModel.IOC
 		/// </summary>
 		/// <returns>An IServiceLocator instance.</returns>
 		/// ------------------------------------------------------------------------------------
-		public IServiceLocator CreateServiceLocator()
+		public IServiceLocator CreateServiceLocator(Type customBackendProvider)
 		{
 			// NOTE: When creating an object through IServiceLocator.GetInstance the caller has
 			// to call Dispose() on the newly created object, unless it's a singleton
@@ -135,28 +135,40 @@ namespace SIL.LCModel.IOC
 				.Use<CmObjectSurrogateRepository>();
 
 			// Add BEP.
-			switch (m_backendProviderType)
+			if (customBackendProvider != null)
 			{
-				default:
-					throw new InvalidOperationException(Strings.ksInvalidBackendProviderType);
-				case BackendProviderType.kXML:
-					registry
-						.For<IDataSetup>()
-						.LifecycleIs(new SingletonLifecycle())
-						.Use<XMLBackendProvider>();
-					break;
-				case BackendProviderType.kMemoryOnly:
-					registry
-						.For<IDataSetup>()
-						.LifecycleIs(new SingletonLifecycle())
-						.Use<MemoryOnlyBackendProvider>();
-					break;
-				case BackendProviderType.kSharedXML:
-					registry
-						.For<IDataSetup>()
-						.LifecycleIs(new SingletonLifecycle())
-						.Use<SharedXMLBackendProvider>();
-					break;
+				var backendPlugin = registry
+					.For<IDataSetup>()
+					.LifecycleIs(new SingletonLifecycle());
+				backendPlugin.GetType().GetMethod("Use", new Type[] { })
+					.MakeGenericMethod(customBackendProvider)
+					.Invoke(backendPlugin, null);
+			}
+			else
+			{
+				switch (m_backendProviderType)
+				{
+					default:
+						throw new InvalidOperationException(Strings.ksInvalidBackendProviderType);
+					case BackendProviderType.kXML:
+						registry
+							.For<IDataSetup>()
+							.LifecycleIs(new SingletonLifecycle())
+							.Use<XMLBackendProvider>();
+						break;
+					case BackendProviderType.kMemoryOnly:
+						registry
+							.For<IDataSetup>()
+							.LifecycleIs(new SingletonLifecycle())
+							.Use<MemoryOnlyBackendProvider>();
+						break;
+					case BackendProviderType.kSharedXML:
+						registry
+							.For<IDataSetup>()
+							.LifecycleIs(new SingletonLifecycle())
+							.Use<SharedXMLBackendProvider>();
+						break;
+				}
 			}
 			// Register two additional interfaces of the BEP, which are injected into other services.
 			registry
@@ -171,6 +183,10 @@ namespace SIL.LCModel.IOC
 				.For<IUnitOfWorkService>()
 				.LifecycleIs(new SingletonLifecycle())
 				.Use<UnitOfWorkService>();
+			// registry
+			// 	.For<NoOpUnitOfWorkService>()
+			// 	.LifecycleIs(new SingletonLifecycle())
+			// 	.Use<NoOpUnitOfWorkService>();
 			// Register additional interfaces for the UnitOfWorkService.
 			registry
 				.For<ISilDataAccessHelperInternal>()
@@ -397,6 +413,8 @@ namespace SIL.LCModel.IOC
 			get { return ((UnitOfWorkService) UnitOfWorkService).ActiveUndoStack; }
 		}
 
+		// public bool UnitOfWorkServiceEnabled { get; set; } = true;
+
 		/// <summary>
 		/// Shortcut
 		/// </summary>
@@ -404,6 +422,7 @@ namespace SIL.LCModel.IOC
 		{
 			get
 			{
+				// return UnitOfWorkServiceEnabled ? GetInstance<IUnitOfWorkService>() : GetInstance<NoOpUnitOfWorkService>();
 				return GetInstance<IUnitOfWorkService>();
 			}
 		}

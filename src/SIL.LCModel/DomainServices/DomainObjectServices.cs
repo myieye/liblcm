@@ -1283,6 +1283,7 @@ namespace SIL.LCModel.DomainServices
 		public int Hvo
 		{
 			get { return 0; }
+			set {  }
 		}
 
 		/// <summary>
@@ -1585,6 +1586,7 @@ namespace SIL.LCModel.DomainServices
 		public Guid Guid
 		{
 			get { throw new NotImplementedException(); }
+			set { throw new NotImplementedException(); }
 		}
 
 		/// <summary>

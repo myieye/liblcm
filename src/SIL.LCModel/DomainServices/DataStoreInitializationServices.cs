@@ -132,7 +132,7 @@ namespace SIL.LCModel.DomainServices
 		/// ------------------------------------------------------------------------------------
 		internal static void PrepareCache(LcmCache cache)
 		{
-			EnsureBtForScrParas(cache); // Must happen before EnsureSegmentsForScrParas
+			Watch.Time("DataStoreInitializationServices.EnsureBtForScrParas()", () => EnsureBtForScrParas(cache)); // Must happen before EnsureSegmentsForScrParas
 			EnsureSegmentsForScrParas(cache); // Must happen before FixSegmentsForScriptureParas
 			FixSegmentsForScriptureParas(cache);
 			EnsureValidVersification(cache);

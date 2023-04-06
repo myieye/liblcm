@@ -100,6 +100,13 @@ $propNotes
 					}
 #end
 				}
+#if ($class.Name == "Segment" && $prop.Name == "Analyses")
+				((LcmSet<IAnalysis>)m_$prop.NiuginianPropName).Flid = $prop.Number;
+#elseif ( $prop.Cardinality.ToString() == "Collection" )
+				((LcmSet<I$propTypeClass>)m_${prop.NiuginianPropName}).Flid = $prop.Number;
+#else
+				((LcmList<I$propTypeClass>)m_${prop.NiuginianPropName}).Flid = $prop.Number;
+#end
 				return m_$prop.NiuginianPropName;
 			}
 		}

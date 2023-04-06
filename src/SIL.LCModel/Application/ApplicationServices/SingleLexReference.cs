@@ -395,6 +395,7 @@ namespace SIL.LCModel.Application.ApplicationServices
 		public Guid Guid
 		{
 			get { return Guid.Empty; }
+			set { }
 		}
 
 		/// <summary></summary>
@@ -419,6 +420,7 @@ namespace SIL.LCModel.Application.ApplicationServices
 		public int Hvo
 		{
 			get { throw new NotImplementedException(); }
+			set { throw new NotImplementedException(); }
 		}
 
 		/// <summary></summary>

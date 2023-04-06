@@ -95,6 +95,7 @@ namespace SIL.LCModel.DomainImpl
 		public int Flid
 		{
 			get { return m_flid; }
+			set { m_flid = value; }
 		}
 
 		/// ------------------------------------------------------------------------------------

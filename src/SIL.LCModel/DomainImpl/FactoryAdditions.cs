@@ -2780,4 +2780,44 @@ namespace SIL.LCModel.DomainImpl
 	}
 
 	#endregion
+
+	public static class CollectionFactory
+	{
+		public static ILcmOwningCollection<T> CreateOwningCollection<T>(LcmCache cache, ICmObject mainObject, int flid) where T : class, ICmObject
+		{
+			var uowService = cache.ServiceLocator.GetInstance<IUnitOfWorkService>();
+			var repository = cache.ServiceLocator.GetInstance<IRepository<T>>();
+			return new LcmOwningCollection<T>(uowService, repository, mainObject, flid);
+		}
+		public static ILcmReferenceCollection<T> CreateReferenceCollection<T>(LcmCache cache, ICmObject mainObject, int flid) where T : class, ICmObject
+		{
+			var uowService = cache.ServiceLocator.GetInstance<IUnitOfWorkService>();
+			var repository = cache.ServiceLocator.GetInstance<IRepository<T>>();
+			return new LcmReferenceCollection<T>(uowService, repository, mainObject, flid);
+		}
+		public static ILcmOwningSequence<T> CreateOwningSequence<T>(LcmCache cache, ICmObject mainObject, int flid) where T : class, ICmObject
+		{
+			var uowService = cache.ServiceLocator.GetInstance<IUnitOfWorkService>();
+			var repository = cache.ServiceLocator.GetInstance<IRepository<T>>();
+			return new LcmOwningSequence<T>(uowService, repository, mainObject, flid);
+		}
+		public static ILcmReferenceSequence<T> CreateReferenceSequence<T>(LcmCache cache, ICmObject mainObject, int flid) where T : class, ICmObject
+		{
+			var uowService = cache.ServiceLocator.GetInstance<IUnitOfWorkService>();
+			var repository = cache.ServiceLocator.GetInstance<IRepository<T>>();
+			return new LcmReferenceSequence<T>(uowService, repository, mainObject, flid);
+		}
+	}
+
+	public static class MultiStringFactory
+	{
+		public static IMultiString CreateMultiString(ICmObject mainObject, int flid)
+		{
+			return new MultiStringAccessor(mainObject, flid);
+		}
+		public static IMultiUnicode CreateMultiUnicode(ICmObject mainObject, int flid)
+		{
+			return new MultiUnicodeAccessor(mainObject, flid);
+		}
+	}
 }

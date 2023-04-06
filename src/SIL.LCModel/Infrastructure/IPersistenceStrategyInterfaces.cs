@@ -136,7 +136,7 @@ namespace SIL.LCModel.Infrastructure
 	/// <summary>
 	/// This interface defines ways to read data from some data storage device.
 	/// </summary>
-	internal interface IDataReader : IDisposable
+	public interface IDataReader : IDisposable
 	{
 		/// <summary>
 		/// Get the CmObject for the given Guid.
@@ -144,13 +144,21 @@ namespace SIL.LCModel.Infrastructure
 		/// <param name="guid">The Guid of the object to return</param>
 		/// <returns>The CmObject that has the given Guid.</returns>
 		/// <exception cref="KeyNotFoundException">Thrown when the given Guid is not in the dictionary.</exception>
-		ICmObject GetObject(Guid guid);
+		T GetObject<T>(Guid guid) where T : class, ICmObject;
 
 		/// <summary>
 		/// Get the CmObject for the given Guid.
 		/// </summary>
 		/// <exception cref="KeyNotFoundException">Thrown when the given Guid is not in the dictionary.</exception>
-		ICmObject GetObject(ICmObjectId id);
+		T GetObject<T>(ICmObjectId id) where T : class, ICmObject;
+
+		/// <summary>
+		/// Get the CmObject for the given Hvo.
+		/// </summary>
+		/// <param name="hvo">The Hvo of the object to return</param>
+		/// <returns>The CmObject that has the given Hvo.</returns>
+		/// <exception cref="KeyNotFoundException">Thrown when the given Hvo is not in the dictionary.</exception>
+		T GetObject<T>(int hvo) where T : class, ICmObject;
 
 		/// <summary>
 		/// Get the CmObject for the given Hvo.
@@ -264,7 +272,7 @@ namespace SIL.LCModel.Infrastructure
 	/// so they should take steps to ensure that only one operation is performed for
 	/// any given surrogate.
 	/// </remarks>
-	internal interface IDataStorer : IDisposable
+	public interface IDataStorer : IDisposable
 	{
 		bool Commit(HashSet<ICmObjectOrSurrogate> newbies, HashSet<ICmObjectOrSurrogate> dirtballs, HashSet<ICmObjectId> goners);
 		void CompleteAllCommits();

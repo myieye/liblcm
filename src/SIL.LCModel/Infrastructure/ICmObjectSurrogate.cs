@@ -50,7 +50,7 @@ namespace SIL.LCModel.Infrastructure
 	/// This interface encapsulates the behaviors needed in sets of objects that might be either CmObjects
 	/// or surrogates, as used in persistence and Unit of Work.
 	/// </summary>
-	internal interface ICmObjectOrSurrogate
+	public interface ICmObjectOrSurrogate
 	{
 		/// <summary>
 		/// Get the main XML string for the internal CmObject.

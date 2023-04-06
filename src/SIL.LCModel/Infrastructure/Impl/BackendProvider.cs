@@ -556,7 +556,8 @@ namespace SIL.LCModel.Infrastructure.Impl
 			string storePath = Path.Combine(ProjectId.ProjectFolder, LcmFileHelper.ksWritingSystemsDir);
 			WritingSystemManager wsManager = m_cache.ServiceLocator.WritingSystemManager;
 
-			wsManager.WritingSystemStore = new CoreLdmlInFolderWritingSystemRepository(storePath, ProjectSettingsStore, UserSettingsStore, globalRepo);
+			Watch.Time("BackendProvider.InitializeWritingSystemManager: new CoreLdmlInFolderWritingSystemRepository()", () =>
+				wsManager.WritingSystemStore = new CoreLdmlInFolderWritingSystemRepository(storePath, ProjectSettingsStore, UserSettingsStore, globalRepo));
 
 			// Writing systems are not "modified" when the system is freshly-initialized
 			foreach (CoreWritingSystemDefinition ws in wsManager.WritingSystemStore.AllWritingSystems)
@@ -752,7 +753,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 				var fMigrationNeeded = StartupInternalWithDataMigrationIfNeeded(progressDlg);
 				InitializeWritingSystemManager();
 				if (fBootstrapSystem)
-					BootstrapExtantSystem();
+					Watch.Time("BackendProvider.StartupExtantLanguageProject: BootstrapExtantSystem()", () => BootstrapExtantSystem());
 				if (fMigrationNeeded)
 				{
 					int count;
@@ -1000,12 +1001,12 @@ namespace SIL.LCModel.Infrastructure.Impl
 		/// <param name="guid">The Guid of the object to return</param>
 		/// <returns>The CmObject that has the given Guid.</returns>
 		/// <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown when the given Guid is not in the dictionary.</exception>
-		public ICmObject GetObject(Guid guid)
+		public T GetObject<T>(Guid guid) where T : class, ICmObject
 		{
 			var obj = m_identityMap.GetObject(guid);
 
 			// Filter out objects that are new or deleted.
-			return obj.IsValidObject ? obj : null;
+			return obj.IsValidObject ? (T) obj : (T) null;
 		}
 
 		/// <summary>
@@ -1014,7 +1015,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 		/// <param name="guid">The Guid of the object to return</param>
 		/// <returns>The CmObject that has the given Guid.</returns>
 		/// <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown when the given Guid is not in the dictionary.</exception>
-		public ICmObject GetObject(ICmObjectId guid)
+		public T GetObject<T>(ICmObjectId guid) where T : class, ICmObject
 		{
 			var obj = m_identityMap.GetObject(guid);
 
@@ -1024,7 +1025,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 			Debug.Assert(obj.IsValidObject, "Invalid object returned");
 
 			// Filter out objects that are new or deleted.
-			return obj.IsValidObject ? obj : null;
+			return obj.IsValidObject ? (T) obj : null;
 		}
 
 		/// <summary>
@@ -1033,6 +1034,16 @@ namespace SIL.LCModel.Infrastructure.Impl
 		public ICmObject GetObjectIfFluffed(ICmObjectId id)
 		{
 			return m_identityMap.GetObjectIfFluffed(id);
+		}
+		/// <summary>
+		/// Get the CmObject for the given Hvo.
+		/// </summary>
+		/// <param name="hvo">The Hvo of the object to return</param>
+		/// <returns>The CmObject that has the given Hvo.</returns>
+		/// <exception cref="T:System.Collections.Generic.KeyNotFoundException">Thrown when the given Hvo is not in the dictionary.</exception>
+		public T GetObject<T>(int hvo) where T : class, ICmObject
+		{
+			return (T) m_identityMap.GetObject(hvo);
 		}
 		/// <summary>
 		/// Get the CmObject for the given Hvo.

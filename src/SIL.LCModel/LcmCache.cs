@@ -81,7 +81,7 @@ namespace SIL.LCModel
 		public static LcmCache CreateCacheWithNoLangProj(IProjectIdentifier projectId,
 			string userWsIcuLocale, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings)
 		{
-			LcmCache createdCache = CreateCacheInternal(projectId, ui, dirs, settings);
+			LcmCache createdCache = CreateCacheInternal(projectId, ui, dirs, settings, null);
 			createdCache.FullyInitializedAndReadyToRock = true;
 			return createdCache;
 		}
@@ -121,6 +121,12 @@ namespace SIL.LCModel
 			return createdCache;
 		}
 
+		public static LcmCache CreateCacheFromExistingData(IProjectIdentifier projectId,
+			string userWsIcuLocale, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings, IThreadedProgress progressDlg)
+			{
+				return CreateCacheFromExistingData(projectId, userWsIcuLocale, ui, dirs, settings, progressDlg, null);
+			}
+
 		/// ------------------------------------------------------------------------------------
 		/// <summary>
 		/// Creates a new LcmCache that uses a specified data provider type that loads the
@@ -134,11 +140,11 @@ namespace SIL.LCModel
 		/// <param name="progressDlg">The progress dialog box</param>
 		/// ------------------------------------------------------------------------------------
 		public static LcmCache CreateCacheFromExistingData(IProjectIdentifier projectId,
-			string userWsIcuLocale, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings, IThreadedProgress progressDlg)
+			string userWsIcuLocale, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings, IThreadedProgress progressDlg, Type customBackendProvider)
 		{
 			return CreateCacheInternal(projectId, userWsIcuLocale, ui, dirs, settings,
 				dataSetup => dataSetup.StartupExtantLanguageProject(projectId, true, progressDlg),
-				cache => cache.Initialize());
+				cache => cache.Initialize(), customBackendProvider);
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -159,7 +165,7 @@ namespace SIL.LCModel
 			var projectId = new SimpleProjectId(BackendProviderType.kXML, projectPath);
 			return CreateCacheInternal(projectId, userWsIcuLocale, ui, dirs, settings,
 				dataSetup => dataSetup.StartupExtantLanguageProject(projectId, true, progressDlg),
-				cache => cache.Initialize());
+				cache => cache.Initialize(), null);
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -190,13 +196,13 @@ namespace SIL.LCModel
 		/// <param name="dirs">The directories service.</param>
 		/// <param name="settings">The LCM settings.</param>
 		/// ------------------------------------------------------------------------------------
-		private static LcmCache CreateCacheInternal(IProjectIdentifier projectId, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings)
+		private static LcmCache CreateCacheInternal(IProjectIdentifier projectId, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings, Type customBackendProvider)
 		{
 			settings.Freeze();
 			var providerType = GetProviderTypeFromProjectId(projectId);
 
 			var iocFactory = new LcmServiceLocatorFactory(providerType, ui, dirs, settings);
-			var servLoc = (ILcmServiceLocator)iocFactory.CreateServiceLocator();
+			var servLoc = (ILcmServiceLocator)iocFactory.CreateServiceLocator(customBackendProvider);
 			var createdCache = servLoc.GetInstance<LcmCache>();
 			createdCache.m_serviceLocator = servLoc;
 			createdCache.m_lgwsFactory = servLoc.GetInstance<ILgWritingSystemFactory>();
@@ -239,7 +245,7 @@ namespace SIL.LCModel
 		private static LcmCache CreateCacheInternal(IProjectIdentifier projectId,
 			string userWsIcuLocale, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings, Action<IDataSetup> doThe)
 		{
-			return CreateCacheInternal(projectId, userWsIcuLocale, ui, dirs, settings, doThe, null);
+			return CreateCacheInternal(projectId, userWsIcuLocale, ui, dirs, settings, doThe, null, null);
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -257,18 +263,20 @@ namespace SIL.LCModel
 		/// ------------------------------------------------------------------------------------
 		private static LcmCache CreateCacheInternal(IProjectIdentifier projectId,
 			string userWsIcuLocale, ILcmUI ui, ILcmDirectories dirs, LcmSettings settings, Action<IDataSetup> doThe,
-			Action<LcmCache> initialize)
+			Action<LcmCache> initialize, Type customBackendProvider)
 		{
 			BackendProviderType providerType = projectId.Type;
 			bool useMemoryWsManager = (providerType == BackendProviderType.kMemoryOnly
 				|| providerType == BackendProviderType.kXMLWithMemoryOnlyWsMgr
 				|| providerType == BackendProviderType.kSharedXMLWithMemoryOnlyWsMgr);
-			LcmCache createdCache = CreateCacheInternal(projectId, ui, dirs, settings);
+
+
+			LcmCache createdCache = Watch.Time("LcmCache.CreateCacheInternal: CreateCacheInternal()", () => CreateCacheInternal(projectId, ui, dirs, settings, customBackendProvider));
 
 			try
 			{
 				// Init backend data provider
-				var dataSetup = createdCache.ServiceLocator.GetInstance<IDataSetup>();
+				var dataSetup = Watch.Time("LcmCache.CreateCacheInternal: GetInstance<IDataSetup>()", () => createdCache.ServiceLocator.GetInstance<IDataSetup>());
 				dataSetup.UseMemoryWritingSystemManager = useMemoryWsManager;
 				doThe(dataSetup);
 				initialize?.Invoke(createdCache);
@@ -280,10 +288,13 @@ namespace SIL.LCModel
 				// the resource string in the Language DLL which controls the default UI language.
 				if (!string.IsNullOrEmpty(userWsIcuLocale))
 				{
-					ILcmServiceLocator servLoc = createdCache.ServiceLocator;
-					CoreWritingSystemDefinition wsUser;
-					servLoc.WritingSystemManager.GetOrSet(userWsIcuLocale, out wsUser);
-					servLoc.WritingSystemManager.UserWritingSystem = wsUser;
+					Watch.Time("Set WritingSystemManager.UserWritingSystem", () =>
+					{
+						ILcmServiceLocator servLoc = createdCache.ServiceLocator;
+						CoreWritingSystemDefinition wsUser;
+						servLoc.WritingSystemManager.GetOrSet(userWsIcuLocale, out wsUser);
+						servLoc.WritingSystemManager.UserWritingSystem = wsUser;
+					});
 				}
 			}
 			catch (Exception)
@@ -302,13 +313,19 @@ namespace SIL.LCModel
 		/// ------------------------------------------------------------------------------------
 		private void Initialize()
 		{
-			if (ServiceLocator.WritingSystems.DefaultAnalysisWritingSystem == null)
-				throw new LcmInitializationException(string.Format(Strings.ksNoWritingSystems, Strings.ksAnalysis));
-			if (ServiceLocator.WritingSystems.DefaultVernacularWritingSystem == null)
-				throw new LcmInitializationException(string.Format(Strings.ksNoWritingSystems, Strings.ksVernacular));
+			Watch.Time("LcmCache.Initialize()", () =>
+			{
+				if (Watch.Time("LcmCache.Initialize: Read: ServiceLocator.WritingSystems.DefaultAnalysisWritingSystem", () => ServiceLocator.WritingSystems.DefaultAnalysisWritingSystem) == null)
+					throw new LcmInitializationException(string.Format(Strings.ksNoWritingSystems, Strings.ksAnalysis));
+				if (ServiceLocator.WritingSystems.DefaultVernacularWritingSystem == null)
+					throw new LcmInitializationException(string.Format(Strings.ksNoWritingSystems, Strings.ksVernacular));
 
-			NonUndoableUnitOfWorkHelper.Do(ActionHandlerAccessor, () =>
-				DataStoreInitializationServices.PrepareCache(this));
+				Watch.Time("LcmCache.Initialize: NonUndoableUnitOfWorkHelper.Do()", () =>
+				{
+					NonUndoableUnitOfWorkHelper.Do(ActionHandlerAccessor, () =>
+						Watch.Time("LcmCache.Initialize: DataStoreInitializationServices.PrepareCache()", () => DataStoreInitializationServices.PrepareCache(this)));
+				});
+			});
 		}
 
 		/// <summary>

@@ -47,7 +47,7 @@ namespace SIL.LCModel.DomainImpl
 		private readonly ICmObjectInternal m_mainObject;
 
 		/// <summary>The field ID of the collection property.</summary>
-		private readonly int m_flid;
+		private int m_flid;
 
 		#endregion Data Members
 
@@ -64,9 +64,10 @@ namespace SIL.LCModel.DomainImpl
 		/// <summary>
 		/// Get the field ID for the vector.
 		/// </summary>
-		protected internal int Flid
+		internal int Flid
 		{
 			get { return m_flid; }
+			set { m_flid = value; }
 		}
 
 		/// <summary>
@@ -855,7 +856,7 @@ namespace SIL.LCModel.DomainImpl
 		private readonly ICmObjectInternal m_mainObject;
 
 		/// <summary>The field ID of the sequence property.</summary>
-		private readonly int m_flid;
+		private int m_flid;
 
 		#endregion Data Members
 
@@ -875,6 +876,7 @@ namespace SIL.LCModel.DomainImpl
 		internal int Flid
 		{
 			get { return m_flid; }
+			set { m_flid = value; }
 		}
 
 		/// <summary>

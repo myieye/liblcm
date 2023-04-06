@@ -12,7 +12,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 	/// Base class for the generated repositories
 	/// </summary>
 	/// ----------------------------------------------------------------------------------------
-	public abstract class RepositoryBase<T> : IRepository<T> where T : ICmObject
+	public abstract class RepositoryBase<T> : IRepository<T> where T : class, ICmObject
 	{
 		/// <summary>The data reader for accessing the internal object map</summary>
 		internal readonly IDataReader m_dataReader;
@@ -70,7 +70,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 		/// <exception cref="KeyNotFoundException">Thrown if the object does not exist.</exception>
 		public T GetObject(Guid id)
 		{
-			return (T)m_dataReader.GetObject(id);
+			return m_dataReader.GetObject<T>(id);
 		}
 
 		/// <summary>
@@ -79,7 +79,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 		/// <exception cref="KeyNotFoundException">Thrown if the object does not exist.</exception>
 		public T GetObject(ICmObjectId id)
 		{
-			return (T)m_dataReader.GetObject(id);
+			return m_dataReader.GetObject<T>(id);
 		}
 
 		/// <summary>
@@ -90,7 +90,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 		/// <exception cref="KeyNotFoundException">Thrown if the object does not exist.</exception>
 		public T GetObject(int hvo)
 		{
-			return (T)m_dataReader.GetObject(hvo);
+			return m_dataReader.GetObject<T>(hvo);
 		}
 
 		/// <summary>

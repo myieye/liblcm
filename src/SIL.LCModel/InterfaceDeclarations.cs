@@ -305,7 +305,7 @@ namespace SIL.LCModel
 		/// The field for which it is an accessor.
 		/// </summary>
 		int Flid
-		{ get; }
+		{ get; set; }
 
 		/// ------------------------------------------------------------------------------------
 		/// <summary>

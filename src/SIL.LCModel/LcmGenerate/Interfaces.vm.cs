@@ -27,7 +27,8 @@ namespace SIL.LCModel	// All generated class interfaces are in here.
 		int Hvo
 		{
 			get;
-		}
+            set;
+        }
 
 		/// <summary>
 		/// Object owner. (Null, if not owned.)

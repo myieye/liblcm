@@ -150,7 +150,7 @@ namespace SIL.LCModel.Infrastructure.Impl
 		protected override int StartupInternal(int currentModelVersion)
 		{
 			CreateSettingsStores();
-			LockProject();
+			Watch.Time("XMLBackendProvider.LockProject()", () => LockProject());
 			return ReadInSurrogates(currentModelVersion);
 		}
 
@@ -258,10 +258,13 @@ namespace SIL.LCModel.Infrastructure.Impl
 
 					Stopwatch watch = new Stopwatch();
 					watch.Start();
-					using (var er = new ElementReader("<rt ", "</languageproject>", ProjectId.Path, MakeSurrogate))
+					Watch.Time("XMLBackendProvider.ReadInSurrogates: MakeSurrogates", () =>
 					{
-						er.Run();
-					}
+						using (var er = new ElementReader("<rt ", "</languageproject>", ProjectId.Path, MakeSurrogate))
+						{
+							er.Run();
+						}
+					});
 					watch.Stop();
 					Debug.WriteLine("Making surrogates took " + watch.ElapsedMilliseconds + " ms.");
 				}
